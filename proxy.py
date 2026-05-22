@@ -45,12 +45,15 @@ class Proxy:
         skills = {}
         clients = []
 
-        skill_files = os.listdir(f"{self.config_dir}/skills")
-        for skill_file in skill_files:
-            with open(f"{self.config_dir}/skills/{skill_file}", "r") as f:
-                skill = f.read()
-                skill_file = skill_file.replace(".md", "")
-                skills[skill_file] = skill
+        try:
+            skill_files = os.listdir(f"{self.config_dir}/skills")
+            for skill_file in skill_files:
+                with open(f"{self.config_dir}/skills/{skill_file}", "r") as f:
+                    skill = f.read()
+                    skill_file = skill_file.replace(".md", "")
+                    skills[skill_file] = skill
+        except:
+            logging.warning("Failed to load skills. Skipping")
 
         for server in self.config["mcp_servers"]:
             try:
