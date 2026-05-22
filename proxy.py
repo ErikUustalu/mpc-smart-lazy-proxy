@@ -12,6 +12,7 @@ logging.basicConfig(level=logging.WARN, format="%(asctime)s - %(levelname)s - %(
 
 class Proxy:
     def __init__(self, config_dir="config", auto_reload=True, check_interval=1):
+        self.config_dir = config_dir
         self.config_path = F"{config_dir}/config.json"
         self.config = None
         self.auto_reload_enabled = auto_reload
@@ -41,7 +42,16 @@ class Proxy:
                 logging.warning("Invalid json. Skipping reload")
                 return
         tools = {}
+        skills = {}
         clients = []
+
+        skill_files = os.listdir(f"{self.config_dir}/skills")
+        for skill_file in skill_files:
+            with open(f"{self.config_dir}/skills/{skill_file}", "r") as f:
+                skill = f.read()
+                skill_file = skill_file.replace(".md", "")
+                skills[skill_file] = skill
+
         for server in self.config["mcp_servers"]:
             try:
                 if server["auth"]:
@@ -57,11 +67,20 @@ class Proxy:
                 server_name = server["name"].lower().replace(" ", "_")
                 tool_name = f"{server_name}_{tool.name}"
                 tool.name = tool_name
+
+                for skill in skills.keys():
+                    if skill.lower() in tool_name.lower():
+                        skill = skills[skill]
+                    else:
+                        skill = ""
+
                 tools[tool_name] = {
                     "tool": tool,
                     "client": client,
-                    "server": server_name
+                    "server": server_name,
+                    "skill": skill
                 }
+                
         self.tools = tools
         self.clients = clients
 
