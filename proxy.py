@@ -87,11 +87,16 @@ class Proxy:
     async def list_tools(self):
         return list(self.tools.keys())
     
-    async def describe_tool(self, tool_name):
+    async def describe_tool(self, tool_name, include_skill=True):
         if tool_name not in self.tools:
             return f"Tool '{tool_name}' not found"
         else:
-            return self.tools[tool_name]["tool"]
+            description = str(self.tools[tool_name]["tool"])
+            if include_skill:
+                skill = await self.get_skill(tool_name)
+                if skill != "":
+                    description += f"\n\n{skill}"
+            return description
         
     async def get_skill(self, tool_name):
         if tool_name not in self.tools:
