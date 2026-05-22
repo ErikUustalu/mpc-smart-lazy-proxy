@@ -11,8 +11,8 @@ from rapidfuzz import fuzz
 logging.basicConfig(level=logging.WARN, format="%(asctime)s - %(levelname)s - %(message)s")
 
 class Proxy:
-    def __init__(self, config_path="config/config.json", auto_reload=True, check_interval=1):
-        self.config_path = config_path
+    def __init__(self, config_dir="config", auto_reload=True, check_interval=1):
+        self.config_path = F"{config_dir}/config.json"
         self.config = None
         self.auto_reload_enabled = auto_reload
         self.check_interval = check_interval
