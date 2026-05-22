@@ -80,7 +80,7 @@ class Proxy:
                     "server": server_name,
                     "skill": skill
                 }
-                
+
         self.tools = tools
         self.clients = clients
 
@@ -92,6 +92,9 @@ class Proxy:
             return f"Tool '{tool_name}' not found"
         else:
             return self.tools[tool_name]["tool"]
+        
+    async def get_skill(self, tool_name):
+        return self.tools[tool_name]["skill"]
         
     async def call_tool(self, tool_name, args):
         if tool_name not in self.tools:
@@ -137,7 +140,7 @@ async def main():
     await proxy.load_config()
     
     while True:
-        task = input("list(1), describe(2), call(3), search(4), reload(5), exit(6): ")
+        task = input("list(1), describe(2), call(3), search(4), get skill(5), reload(6), exit(7): ")
         if task == "1":
             tools = await proxy.list_tools()
             for i in range(len(tools)):
@@ -170,9 +173,15 @@ async def main():
             print(await proxy.search_tools(query, max_results=max_results, return_description=return_description))
 
         elif task == "5":
-            await proxy.load_config()
+            tool_name = input("Tool name: ")
+            if tool_name.isdigit():
+                tool_name = list(await proxy.list_tools())[int(tool_name)]
+            await proxy.get_skill(tool_name)
 
         elif task == "6":
+            await proxy.load_config()
+
+        elif task == "7":
             await proxy.disconnect()
             break
 
