@@ -1,4 +1,4 @@
-# Improver version of [MCP lazy proxy](https://github.com/ErikUustalu/mcp-lazy-proxy) with more features
+# Improved version of [MCP lazy proxy](https://github.com/ErikUustalu/mcp-lazy-proxy) with more features
 
 A lightweight context efficient proxy for MCP servers. Designed to reduce token usage by lazy-loading tools and tool descriptions only when needed.
 
