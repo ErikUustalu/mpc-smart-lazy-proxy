@@ -176,7 +176,7 @@ async def main():
             tool_name = input("Tool name: ")
             if tool_name.isdigit():
                 tool_name = list(await proxy.list_tools())[int(tool_name)]
-            await proxy.get_skill(tool_name)
+            print(await proxy.get_skill(tool_name))
 
         elif task == "6":
             await proxy.load_config()
