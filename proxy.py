@@ -11,8 +11,9 @@ from rapidfuzz import fuzz
 logging.basicConfig(level=logging.WARN, format="%(asctime)s - %(levelname)s - %(message)s")
 
 class Proxy:
-    def __init__(self, config_path="config/config.json", auto_reload=True, check_interval=1):
-        self.config_path = config_path
+    def __init__(self, config_dir="config", auto_reload=True, check_interval=1):
+        self.config_dir = config_dir
+        self.config_path = F"{config_dir}/config.json"
         self.config = None
         self.auto_reload_enabled = auto_reload
         self.check_interval = check_interval
@@ -41,7 +42,16 @@ class Proxy:
                 logging.warning("Invalid json. Skipping reload")
                 return
         tools = {}
+        skills = {}
         clients = []
+
+        skill_files = os.listdir(f"{self.config_dir}/skills")
+        for skill_file in skill_files:
+            with open(f"{self.config_dir}/skills/{skill_file}", "r") as f:
+                skill = f.read()
+                skill_file = skill_file.replace(".md", "")
+                skills[skill_file] = skill
+
         for server in self.config["mcp_servers"]:
             try:
                 if server["auth"]:
@@ -57,22 +67,42 @@ class Proxy:
                 server_name = server["name"].lower().replace(" ", "_")
                 tool_name = f"{server_name}_{tool.name}"
                 tool.name = tool_name
+
+                skillstext = ""
+                for skill in skills.keys():
+                    if skill.lower() in tool_name.lower():
+                        skillstext += skills[skill]
+                        skillstext += "\n"
+
                 tools[tool_name] = {
                     "tool": tool,
                     "client": client,
-                    "server": server_name
+                    "server": server_name,
+                    "skill": skillstext
                 }
+
         self.tools = tools
         self.clients = clients
 
     async def list_tools(self):
         return list(self.tools.keys())
     
-    async def describe_tool(self, tool_name):
+    async def describe_tool(self, tool_name, include_skill=True):
         if tool_name not in self.tools:
             return f"Tool '{tool_name}' not found"
         else:
-            return self.tools[tool_name]["tool"]
+            description = str(self.tools[tool_name]["tool"])
+            if include_skill:
+                skill = await self.get_skill(tool_name)
+                if skill != "":
+                    description += f"\n\n{skill}"
+            return description
+        
+    async def get_skill(self, tool_name):
+        if tool_name not in self.tools:
+            return f"Tool '{tool_name}' not found"
+        else:
+            return self.tools[tool_name]["skill"]
         
     async def call_tool(self, tool_name, args):
         if tool_name not in self.tools:
@@ -103,7 +133,7 @@ class Proxy:
 
         if return_description:
             for tool in tools:
-                matches.append(str(self.tools[tool]["tool"]))
+                matches.append(str(await self.describe_tool(tool)))
         else:
             matches = tools
             
@@ -118,7 +148,7 @@ async def main():
     await proxy.load_config()
     
     while True:
-        task = input("list(1), describe(2), call(3), search(4), reload(5), exit(6): ")
+        task = input("list(1), describe(2), call(3), search(4), get skill(5), reload(6), exit(7): ")
         if task == "1":
             tools = await proxy.list_tools()
             for i in range(len(tools)):
@@ -151,9 +181,15 @@ async def main():
             print(await proxy.search_tools(query, max_results=max_results, return_description=return_description))
 
         elif task == "5":
-            await proxy.load_config()
+            tool_name = input("Tool name: ")
+            if tool_name.isdigit():
+                tool_name = list(await proxy.list_tools())[int(tool_name)]
+            print(await proxy.get_skill(tool_name))
 
         elif task == "6":
+            await proxy.load_config()
+
+        elif task == "7":
             await proxy.disconnect()
             break
 

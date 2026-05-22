@@ -5,7 +5,7 @@ import logging
 from proxy import Proxy
 from fastmcp import FastMCP
 
-CONFIG_PATH = os.environ.get("CONFIG_PATH", "config/config.json")
+CONFIG_PATH = os.environ.get("CONFIG_DIR", "config")
 
 logging.basicConfig(level=logging.WARN, format="%(asctime)s - %(levelname)s - %(message)s")
 
@@ -25,7 +25,7 @@ async def list_tools() -> str:
 @mcp.tool()
 async def describe_tool(tool_name: str) -> str:
     """Describe a tool in detail"""
-    return str(await proxy.describe_tool(tool_name))
+    return await proxy.describe_tool(tool_name)
 
 @mcp.tool()
 async def call_tool(tool_name: str, args: dict) -> str:
