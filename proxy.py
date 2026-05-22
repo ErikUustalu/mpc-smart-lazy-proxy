@@ -68,17 +68,17 @@ class Proxy:
                 tool_name = f"{server_name}_{tool.name}"
                 tool.name = tool_name
 
-                skill = ""
+                skillstext = ""
                 for skill in skills.keys():
                     if skill.lower() in tool_name.lower():
-                        skill += skills[skill]
-                        skill += "\n"
+                        skillstext += skills[skill]
+                        skillstext += "\n"
 
                 tools[tool_name] = {
                     "tool": tool,
                     "client": client,
                     "server": server_name,
-                    "skill": skill
+                    "skill": skillstext
                 }
 
         self.tools = tools
